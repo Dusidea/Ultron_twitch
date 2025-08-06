@@ -32,8 +32,11 @@ class TwitchCollectCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $gameId = '512998'; // TOTK
-        $url = 'https://api.twitch.tv/helix/streams?game_id=' . $gameId . '&language=fr';
-
+        $url = 'https://api.twitch.tv/helix/streams?game_id=' . $gameId . '&language=fr&first=100';
+        // where parameters are 
+            // gameID (allows to find the right category), 
+            // language: filters streams in french, 
+            // first=100 makes sure we get up to 100 results to avoid pagination every 20 results
         $response = $this->client->request('GET', $url, [
             'headers' => [
                 'Client-ID' => $this->clientId,
@@ -46,6 +49,8 @@ class TwitchCollectCommand extends Command
         $timestamp = date('Y-m-d H:i:s');
 
         $rows = [];
+        $rank = 1;
+
         foreach ($data['data'] as $stream) {
             $rows[] = [
                 $timestamp,
@@ -53,10 +58,12 @@ class TwitchCollectCommand extends Command
                 $stream['viewer_count'],
                 $stream['title'],
                 $stream['started_at'],
+                $rank,
             ];
+            $rank++;
         }
 
-        // Écriture dans le fichier CSV
+        // Writing in the CSV output file
         $file = fopen('data/streams.csv', 'a');
         foreach ($rows as $row) {
             fputcsv($file, $row);
