@@ -1,21 +1,29 @@
 # This file is the entry point to configure your own services.
 # Files in the packages/ subdirectory configure your dependencies.
 
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     TWITCH_CLIENT_ID: "%env(TWITCH_CLIENT_ID)%"
     TWITCH_ACCESS_TOKEN: "%env(TWITCH_ACCESS_TOKEN)%"
-services:
-    # default configuration for services in *this* file
-    _defaults:
-        autowire: true # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+    twitch.categories:
+        TOTK: [512998, 1981388235]
+        Skyrim: [30028, 1050003477, 1258270417]
+        Isaac: [32207, 94073, 201557326, 436344698, 906830759, 1414860634]
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
     App\:
         resource: "../src/"
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Service\TwitchCollector:
+        arguments:
+            $clientId: "%TWITCH_CLIENT_ID%"
+            $accessToken: "%TWITCH_ACCESS_TOKEN%"
+            $outputDir: "%kernel.project_dir%/data"
+
+    App\Command\TwitchCollectCommand:
+        arguments:
+            $categories: "%twitch.categories%"

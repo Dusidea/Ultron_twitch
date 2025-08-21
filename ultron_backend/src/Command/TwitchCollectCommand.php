@@ -2,75 +2,47 @@
 
 namespace App\Command;
 
+use App\Service\TwitchCollector;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'twitch:collect-viewers',
-    description: 'Appelle l\'API Twitch et écrit dans un fichier CSV',
+    description: 'Collecte les données Twitch pour plusieurs catégories',
 )]
 class TwitchCollectCommand extends Command
 {
-    private HttpClientInterface $client;
-    private string $clientId;
-    private string $accessToken;
+    private TwitchCollector $collector;
 
-    public function __construct(HttpClientInterface $client, ParameterBagInterface $params)
+    // Categories list, 1 game => 1 folder, several categories accepted for 1 game
+    // private array $categories = [
+    //     'TOTK' => ['512998', '1981388235'],   
+    //     'Skyrim' => ['30028 ', '1050003477', '1258270417'],   
+    //     'Isaac' => ['32207', '94073', '201557326', '436344698','906830759', '1414860634'],
+    // ];
+
+    public function __construct(TwitchCollector $collector, array $categories)
     {
         parent::__construct();
-
-        $this->client = $client;
-        $this->clientId = $params->get('TWITCH_CLIENT_ID');
-        $this->accessToken = $params->get('TWITCH_ACCESS_TOKEN');
+        $this->collector = $collector;
+        $this->categories = $categories;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $gameId = '512998'; // TOTK
-        $url = 'https://api.twitch.tv/helix/streams?game_id=' . $gameId . '&language=fr&first=100';
-        // where parameters are 
-            // gameID (allows to find the right category), 
-            // language: filters streams in french, 
-            // first=100 makes sure we get up to 100 results to avoid pagination every 20 results
-        $response = $this->client->request('GET', $url, [
-            'headers' => [
-                'Client-ID' => $this->clientId,
-                'Authorization' => 'Bearer ' . $this->accessToken,
-            ],
-        ]);
+        $io = new SymfonyStyle($input, $output);
 
-        $data = $response->toArray();
-
-        $timestamp = date('Y-m-d H:i:s');
-
-        $rows = [];
-        $rank = 1;
-
-        foreach ($data['data'] as $stream) {
-            $rows[] = [
-                $timestamp,
-                $stream['user_name'],
-                $stream['viewer_count'],
-                $stream['title'],
-                $stream['started_at'],
-                $rank,
-            ];
-            $rank++;
+      foreach ($this->categories as $categoryName => $gameIds) {
+        try {
+            $this->collector->collect($gameIds, $categoryName);
+            $io->success("✅ Données enregistrées pour $categoryName");
+        } catch (\Throwable $e) {
+            $io->error("❌ Erreur sur $categoryName : " . $e->getMessage());
         }
-
-        // Writing in the CSV output file
-        $file = fopen('data/streams.csv', 'a');
-        foreach ($rows as $row) {
-            fputcsv($file, $row);
-        }
-        fclose($file);
-
-        $output->writeln('✅ Données enregistrées à ' . $timestamp);
+    }
 
         return Command::SUCCESS;
     }

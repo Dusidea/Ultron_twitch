@@ -19,43 +19,46 @@ class TwitchCollector
         $this->outputDir = $outputDir;
     }
 
-    public function collect(string $gameId, string $categoryName): void
+   public function collect(array $gameIds, string $categoryName): void
     {
-        $url = 'https://api.twitch.tv/helix/streams?game_id=' . $gameId . '&language=fr&first=100';
-
-        $response = $this->client->request('GET', $url, [
-            'headers' => [
-                'Client-ID' => $this->clientId,
-                'Authorization' => 'Bearer ' . $this->accessToken,
-            ],
-        ]);
-
-        $data = $response->toArray();
-
+        $allRows = [];
         $timestamp = date('Y-m-d H:i:s');
-        $rows = [];
-        $rank = 1;
 
-        foreach ($data['data'] as $stream) {
-            $rows[] = [
-                $timestamp,
-                $stream['user_name'],
-                $stream['viewer_count'],
-                $stream['title'],
-                $stream['started_at'],
-                $rank,
-            ];
-            $rank++;
+        foreach ($gameIds as $gameId) {
+            $url = 'https://api.twitch.tv/helix/streams?game_id=' . $gameId . '&language=fr&first=100';
+
+            $response = $this->client->request('GET', $url, [
+                'headers' => [
+                    'Client-ID' => $this->clientId,
+                    'Authorization' => 'Bearer ' . $this->accessToken,
+                ],
+            ]);
+
+            $data = $response->toArray();
+            $rank = 1;
+
+            foreach ($data['data'] as $stream) {
+                $allRows[] = [
+                    $timestamp,
+                    $stream['user_name'],
+                    $stream['viewer_count'],
+                    $stream['title'],
+                    $stream['started_at'],
+                    $rank,
+                    $gameId, 
+                ];
+                $rank++;
+            }
         }
 
-        // Sauvegarde CSV dans un dossier par catégorie
+        // Writing in the game's CSV
         $dir = $this->outputDir . '/' . $categoryName;
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
 
         $file = fopen($dir . '/streams.csv', 'a');
-        foreach ($rows as $row) {
+        foreach ($allRows as $row) {
             fputcsv($file, $row);
         }
         fclose($file);
