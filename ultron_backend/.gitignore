@@ -10,4 +10,5 @@ env.dev
 /public/bundles/
 /var/
 /vendor/
+/data/streams.csv
 ###< symfony/framework-bundle ###
