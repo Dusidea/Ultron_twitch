@@ -6,9 +6,19 @@ parameters:
     TWITCH_ACCESS_TOKEN: "%env(TWITCH_ACCESS_TOKEN)%"
 
     twitch.categories:
-        TOTK: [512998, 1981388235]
-        Skyrim: [30028, 1050003477, 1258270417]
-        Isaac: [32207, 94073, 201557326, 436344698, 906830759, 1414860634]
+        TOTK: [512998]
+        TOTK_Switch2: [1981388235]
+        Skyrim: [30028]
+        Skyrim_special_edition: [1050003477]
+        Skyrim_anniversary_edition: [1258270417]
+        Isaac: [32207]
+        Isaac_rebirth: [201557326]
+        Isaac_afterbirth: [436344698]
+        Isaac_gameboy_edition: [906830759]
+        Isaac_repentance: [1414860634]
+        DKB: [1222247252]
+        WaterparkMynthos: [861895254]
+        HK: [490147]
 
 services:
     _defaults:
