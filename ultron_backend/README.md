@@ -77,3 +77,17 @@ Now launching the command writes in separate files (1 per game, gathering altern
 Next => installing on a VPS and using Cron as real automation.
 
 // I put all .env files in git ignore but project can't work without a .env (values can be clear) and .env.local (values are sensitive), maybe .env could be committed
+
+### Phase 4 Frontend
+
+#### Serving the files (endpoints)
+
+src > controller > FileController.php
+allows to get a list of files on the route /files (http://[VPS_IP]:8000/files)
+still need to allow file dl
+
+#### Creating a web server (nginx)
+
+-   Install Nginx
+-   configure a virtual host pointing towards public/ in symfony
+-   configure PHP-FPM
