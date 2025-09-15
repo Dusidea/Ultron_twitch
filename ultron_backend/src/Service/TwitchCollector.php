@@ -57,7 +57,9 @@ class TwitchCollector
             mkdir($dir, 0777, true);
         }
 
-        $file = fopen($dir . '/streams.csv', 'a');
+        $filePath = $dir . '/' . $categoryName . '.csv';
+
+        $file = fopen($filePath, 'a');
         foreach ($allRows as $row) {
             fputcsv($file, $row);
         }
