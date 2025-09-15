@@ -19,6 +19,13 @@ parameters:
         DKB: [1222247252]
         WaterparkMynthos: [861895254]
         HK: [490147]
+        Silksong: [511391]
+        H2: [376500771]
+        LPZA: [997367275]
+        HGSS: [23857]
+        LPA: [561013832]
+        SV: [670867987]
+        FRLG: [13332]
 
 services:
     _defaults:
